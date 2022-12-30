@@ -1,0 +1,74 @@
+networks:
+  default:
+    name: external-network-fast-api
+    driver: bridge
+
+volumes:
+  pg_data:
+
+services:
+  fastapi-docker:
+    container_name: fastapi
+    build:
+      context: fastapi/
+      dockerfile: ../docker/fastapi/Dockerfile
+    # image: ${REGISTRY_BASE_PATH}/app-dev:${DEV_BRANCH}
+    environment:
+      - FAST_API_APP=$FAST_API_APP
+      - DB_SCHEMA=$DB_SCHEMA
+      - FAST_API_FILE_FUNC=$FAST_API_FILE_FUNC
+      - FAST_API_SQLALCHEMY_DATABASE_URL=$FAST_API_SQLALCHEMY_DATABASE_URL
+      - MIGRATION_ALEMBIC_MODEL=$MIGRATION_ALEMBIC_MODEL
+      - FAST_API_WEBSOCKET_PORT=$FAST_API_EXTERNAL_PORT
+      - REACT_APP_DEV_FASTAPI_URL=$REACT_APP_DEV_FASTAPI_URL # Must start with "REACT_APP_"
+    # Debug
+    command: python -m debugpy --listen 0.0.0.0:$FAST_API_DEBUG_PORT_INTERNAL -m uvicorn "${FAST_API_APP}${FAST_API_FILE_FUNC}" --proxy-headers --reload --host 0.0.0.0 --port $FAST_API_INTERNAL_PORT
+    # Production (Number of recommended workers is 2 x number_of_cores + 1)
+    # command: gunicorn "${FAST_API_APP}${FAST_API_FILE_FUNC}" --workers 9 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$FAST_API_INTERNAL_PORT
+    volumes:
+      - ./fastapi:/code
+      - ./frontend:/frontend
+    ports:
+      - $FAST_API_EXTERNAL_PORT:$FAST_API_INTERNAL_PORT
+      - $FAST_API_DEBUG_PORT_EXTERNAL:$FAST_API_DEBUG_PORT_INTERNAL
+      - $FAST_API_DEBUG_UNITTESTS_EXTERNAL_PORT:$FAST_API_DEBUG_UNITTESTS_INTERNAL_PORT
+      - $NODE_JS_EXTERNAL_PORT:$NODE_JS_INTERNAL_PORT
+    restart: on-failure
+    depends_on:
+      postgres-docker:
+        condition: service_healthy
+
+  postgres-docker:
+    container_name: postgres
+    image: postgres:${PG_VERSION}
+    environment:
+      - PGHOST=$PGHOST
+      - PGPORT=$PGPORT
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - DB_SCHEMA=$DB_SCHEMA
+      - DB_NAME=$DB_NAME
+      - DB_OWNER=$DB_OWNER
+      - DB_OWNER_PASS=$DB_OWNER_PASS
+      - DB_APP=$DB_APP
+      - DB_APP_PASS=$DB_APP_PASS
+      - DB_READ=$DB_READ
+      - DB_READ_PASS=$DB_READ_PASS
+    ports:
+      - $POSTGRES_DOCKER_PORT:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/home/init
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    restart: on-failure
+
+  # Mail catcher to use during development. Send emails via SMTP to mailhog:1025.
+  # Web interface, to see sent emails, on port 8025 http://localhost:8025/.
+  # mailhog:
+  #   image: mailhog/mailhog
+  #   ports:
+  #     - "8025:8025"

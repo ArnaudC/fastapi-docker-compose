@@ -1,0 +1,47 @@
+# Web server
+uvicorn[standard]>=0.20.0,<1.0.0
+
+# Debug
+debugpy>=1.6.4,<2.0.0
+
+# Production
+gunicorn>=20.1.0,<21.0.0
+
+# FastAPI
+fastapi>=0.88.0,<1.0.0
+pydantic>=1.10.2,<2.0.0
+
+# Postgres
+psycopg2>=2.9.5,<3.0.0
+alembic>=1.8.1,<=2.0.0
+
+# ORM SQLAlchemy
+SQLAlchemy>=1.4.41,<2.0.0
+sqlmodel>=0.0.8,<1.0.0
+
+# Admin
+# starlette-admin>=0.5.0,<1.0.0
+sqladmin>=0.8.0,<1.0.0
+
+# Unit tests
+httpx>=0.23.1,<1.0.0
+pytest>=7.2.0,<8.0.0
+
+# Forms, File upload
+python-multipart>=0.0.5,<1.0.0
+
+# JWT python-jose[cryptography]
+python-jose>=3.3.0,<4.0.0
+cryptography>=38.0.4,<39.0.0
+# Bcrypt passlib[bcrypt]
+passlib>=1.7.4,<2.0.0
+bcrypt>=4.0.1,<5.0.0
+
+# Templates
+Jinja2>=3.1.2,<4.0.0
+
+# GraphQL
+strawberry-graphql>=0.149.1,<1.0.0
+
+# Websockets
+websockets>=10.4,<11.0
