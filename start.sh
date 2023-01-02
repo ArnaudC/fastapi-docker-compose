@@ -108,16 +108,16 @@ migrate() {
 }
 
 fixtures() {
-    fixture_filename="fixtures" # python file name
     if [ "$FAST_API_APP" = "app_sql_model" ]; then
-        fixture_filename="db"
         docker-compose exec postgres-docker bash -c "psql -U $POSTGRES_USER -d $DB_NAME -c '
             DROP TABLE IF EXISTS fastapi_schema.herocitylink;
             DROP TABLE IF EXISTS fastapi_schema.city;
             DROP TABLE IF EXISTS fastapi_schema.hero;
             DROP TABLE IF EXISTS fastapi_schema.team;'"
+        docker-compose exec fastapi-docker bash -c "python3 -m ${FAST_API_APP}.db" # db.py
+    elif [ "$FAST_API_APP" = "app_sql_alchemy" ]; then
+        docker-compose exec fastapi-docker bash -c "python3 -m ${FAST_API_APP}.fixtures"
     fi
-    docker-compose exec fastapi-docker bash -c "python3 -m ${FAST_API_APP}.${fixture_filename}"
 }
 
 resetmigrations() {
