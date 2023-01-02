@@ -520,7 +520,7 @@ async def read_simple_oauth2_read_current_users(current_user: UserSimple = Depen
 async def read_simple_oauth2_user_if_active(current_user: UserSimple = Depends(get_current_active_user_simple)):
     return current_user
 
-# JWT
+# JWT (admin/admin)
 oauth2_jwt_scheme = OAuth2PasswordBearer(tokenUrl="login_jwt")
 class UserJWT(BaseModel):
     username: str
